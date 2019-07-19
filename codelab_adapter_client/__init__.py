@@ -18,9 +18,8 @@ from pathlib import Path
 import importlib
 import functools
 
+ADAPTER_TOPIC = "from_adapter/extensions"
 logger = logging.getLogger(__name__)
-
-# CONTROL_TOPIC = "__control"
 
 
 def threaded(function):
@@ -30,9 +29,6 @@ def threaded(function):
     Decorator for making a function threaded
     `Required`
     :param function:    function/method to run in a thread
-
-    @util.threaded
-    def serve_resources(self):
     """
 
     @functools.wraps(function)
@@ -45,12 +41,24 @@ def threaded(function):
 
     return _threaded
 
+
 class AdapterNode(metaclass=ABCMeta):
     '''
     CodeLab Adapter Node
     '''
-    def __init__(self, name, logger=logger, codelab_adapter_ip_address=None, subscriber_port='16103',
-                 publisher_port='16130', loop_time=0.1, connect_time=0.3, external_message_processor=None, receive_loop_idle_addition=None,):
+
+    def __init__(
+            self,
+            name='',
+            logger=logger,
+            codelab_adapter_ip_address=None,
+            subscriber_port='16103',
+            publisher_port='16130',
+            loop_time=0.1,
+            connect_time=0.3,
+            external_message_processor=None,
+            receive_loop_idle_addition=None,
+    ):
         '''
         :param codelab_adapter_ip_address: Adapter IP Address -
                                       default: 127.0.0.1
@@ -61,14 +69,16 @@ class AdapterNode(metaclass=ABCMeta):
         '''
         self.logger = logger
         self._running = True  # 用于控制线程启停, 使用self.terminate()可以终止线程
-        self.TOPIC = "eim" # todo: 实例必须有TOPIC否则就用默认的
-        self.name = name
+        self.ADAPTER_TOPIC = "from_adapter/extensions"  # message topic: the message from adapter
+        self.SCRATCH_TOPIC = "from_scratch/extensions"  # message topic: the message from scratch
+        if name:
+            self.name = name
+        else:
+            self.name = type(self).__name__
         self.receive_loop_idle_addition = receive_loop_idle_addition
         self.external_message_processor = external_message_processor
         self.connect_time = connect_time
-        self.q = queue.Queue() # message to self.read() , to be compatible with early Coelab Adapter extension(before v2.0)
         self.adapter_exists = False
-
         if codelab_adapter_ip_address:
             self.codelab_adapter_ip_address = codelab_adapter_ip_address
         else:
@@ -89,7 +99,8 @@ class AdapterNode(metaclass=ABCMeta):
                     continue
 
             if not self.adapter_exists:
-                raise RuntimeError('CodeLab Adapter is not running - please start it.')
+                raise RuntimeError(
+                    'CodeLab Adapter is not running - please start it.')
             # determine this computer's IP address
             self.codelab_adapter_ip_address = '127.0.0.1'
 
@@ -116,24 +127,51 @@ class AdapterNode(metaclass=ABCMeta):
 
         # Allow enough time for the TCP connection to the adapter complete.
         time.sleep(self.connect_time)
-
-        # 认真设计消息体 from_adapter to from_scratch
-        # self.set_subscriber_topic('') # sub all topic
+        self.set_subscriber_topic(self.SCRATCH_TOPIC)
 
     def __str__(self):
         return self.name
 
-    def read(self):
-        '''
-        block
-        '''
-        (topic, payload) = self.q.get()
-        message = {"topic" : topic, "payload" : payload}
-        return message
-
     def publish(self, message):
         assert isinstance(message, dict)
-        self.publish_payload(message.get("payload"), topic=message.get("topic"))
+        topic = message.get('topic')
+        payload = message.get("payload")
+        if not topic:
+            topic = self.ADAPTER_TOPIC
+        self.logger.debug(
+            f"{self.name} publish: topic: {topic} payload:{payload}")
+
+        self.publish_payload(payload, topic)
+
+    def get_extension_id(self):
+        if hasattr(self, 'EXTENSION_ID'):
+            return self.EXTENSION_ID
+        else:
+            return self.name
+
+    def pub_notification(self, content, topic="notification", type="info"):
+        '''
+        type
+            ERROR
+            INFO
+        {
+            topic: "from_adapter/extensions/notification"
+            payload: {
+                content:
+            }
+        }
+        '''
+        extension_id = self.get_extension_id()
+        payload = {"type": "error", "extension_id": extension_id}
+        payload["content"] = content
+        self.publish_payload(payload, topic)
+
+    def pub_status(self, statu):
+        topic = ADAPTER_TOPIC + "/status"
+        extension_id = self.get_extension_id()
+        payload = {"extension_id": extension_id}
+        payload["content"] = statu
+        self.publish_payload(payload, topic)
 
     def is_running(self):
         return self._running
@@ -154,18 +192,16 @@ class AdapterNode(metaclass=ABCMeta):
         pub_envelope = topic.encode()
         self.publisher.send_multipart([pub_envelope, message])
 
-    @threaded
     def receive_loop(self):
         """
         This is the receive loop for receiving sub messages.
         """
         while True:
             try:
-                data = self.subscriber.recv_multipart(zmq.NOBLOCK) # NOBLOCK
+                data = self.subscriber.recv_multipart(zmq.NOBLOCK)  # NOBLOCK
                 topic = data[0].decode()
                 payload = msgpack.unpackb(data[1], raw=False)
                 self.message_handle(topic, payload)
-                self.q.put((topic,payload))
             # if no messages are available, zmq throws this exception
             except zmq.error.Again:
                 try:
@@ -175,6 +211,13 @@ class AdapterNode(metaclass=ABCMeta):
                 except KeyboardInterrupt:
                     self.clean_up()
                     raise KeyboardInterrupt
+            '''
+            except msgpack.exceptions.ExtraData as e:
+                self.logger.error(str(e))
+            '''
+
+    def receive_loop_as_thread(self):
+        threaded(self.receive_loop)()
 
     def message_handle(self, topic, payload):
         """
@@ -186,7 +229,6 @@ class AdapterNode(metaclass=ABCMeta):
             pass
             # print('message_handle method should provide implementation in subclass.', topic, payload)
 
-
     def clean_up(self):
         """
         Clean up before exiting.
@@ -194,3 +236,12 @@ class AdapterNode(metaclass=ABCMeta):
         self.publisher.close()
         self.subscriber.close()
         self.context.term()
+
+    def terminate(self):
+        '''
+        stop thread
+        '''
+        self._running = False
+        time.sleep(0.1)
+        self.clean_up()
+        self.logger.info(f"{self} terminate!")
