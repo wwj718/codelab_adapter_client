@@ -1,38 +1,40 @@
 '''
-EIM: Everything Is Message
 Usage
-    git clone https://github.com/wwj718/codelab_adapter_client
     pip install codelab_adapter_client
 '''
 import time
+import logging
 from codelab_adapter_client import AdapterNode, threaded
+
+logging.basicConfig(level=logging.DEBUG)
+
+logger = logging.getLogger(__name__)
 
 
 class EIMNode(AdapterNode):
+    '''
+    Everything Is Message
+    '''
+
     def __init__(self):
         super().__init__()
-        self.EXTENSION_ID = "eim"  # extension_id
+        self.logger = logger
+        # self.EXTENSION_ID = "eim" # default: eim
 
-    def message_handle(self, topic, payload):
+    def extension_message_handle(self, topic, payload):
         print(topic, payload, type(payload))
         if type(payload) == str:
             self.logger.info(f'scratch eim message:{payload}')
             return
-        if type(payload) == dict:
-            extension_id = payload.get('extension_id')
-            if extension_id == self.EXTENSION_ID:
-                self.logger.info(f'eim message:{payload}')
-                self.publish({"payload": payload})
+        elif type(payload) == dict:
+            self.logger.info(f'eim message:{payload}')
+            self.publish({"payload": payload})
 
     def run(self):
         i = 0
         while self._running:
-            payload = {}
-            payload["content"] = str(i)
-            payload["extension_id"] = self.EXTENSION_ID
-            message = {"payload": payload}
+            message = {"payload": {"content": str(i)}}  # topic可选
             self.publish(message)
-            self.logger.debug(f'pub {message}')
             time.sleep(1)
             i += 1
 
@@ -43,4 +45,4 @@ if __name__ == "__main__":
         node.receive_loop_as_thread()  # run message_handle, noblock(threaded)
         node.run()
     except KeyboardInterrupt:
-        node.clean_up()  # Clean up before exiting.
+        node.terminate()  # Clean up before exiting.
