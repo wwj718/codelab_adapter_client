@@ -2,7 +2,7 @@
 
 __author__ = """Wenjie Wu"""
 __email__ = 'wuwenjie718@gmail.com'
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 
 import zmq
 import time
@@ -21,6 +21,7 @@ import functools
 ADAPTER_TOPIC = "from_adapter/extensions"
 SCRATCH_TOPIC = "from_scratch/extensions"
 NOTIFICATION_TOPIC = "notification"
+EXTENSIONS_OPERATE_TOPIC = "adapter_core/extensions/operate"
 logger = logging.getLogger(__name__)
 
 
@@ -224,7 +225,7 @@ class AdapterNode(MessageNode):
             codelab_adapter_ip_address=None,
             subscriber_port='16103',
             publisher_port='16130',
-            subscriber_list=[SCRATCH_TOPIC],
+            subscriber_list=[SCRATCH_TOPIC, EXTENSIONS_OPERATE_TOPIC],
             loop_time=0.1,
             connect_time=0.3,
             external_message_processor=None,
@@ -284,6 +285,9 @@ class AdapterNode(MessageNode):
         self.add_handler(f, type='current_extension')
         return f
         """
+        self.logger.info("please set the  method to your handle method")
+
+    def exit_message_handle(self, topic, payload):
         self.logger.info("please set the  method to your handle method")
 
     def publish(self, message):
@@ -348,6 +352,10 @@ class AdapterNode(MessageNode):
                 for handler in handlers:
                     handler(topic, payload)
                 '''
+        if topic == EXTENSIONS_OPERATE_TOPIC:
+            if payload.get("extension_id") == self.get_extension_id():
+                self.exit_message_handle(topic, payload)
+        # adapter_core/extensions/operate {'content': 'stop', 'extension_id': 'extension_eim_monitor'}
         if self.external_message_processor:
             self.external_message_processor(topic, payload)
 

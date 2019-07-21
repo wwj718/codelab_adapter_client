@@ -42,7 +42,7 @@ class EIMNode(AdapterNode):
 if __name__ == "__main__":
     try:
         node = EIMNode()
-        node.receive_loop_as_thread()  # run message_handle, noblock(threaded)
+        node.receive_loop_as_thread()  # run extension_message_handle, noblock(threaded)
         node.run()
     except KeyboardInterrupt:
         node.terminate()  # Clean up before exiting.
