@@ -4,7 +4,7 @@
 
 from setuptools import setup, find_packages
 
-with open('readme.md') as readme_file:
+with open('README.rst') as readme_file:
     readme = readme_file.read()
 
 with open('HISTORY.rst') as history_file:
@@ -47,6 +47,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/wwj718/codelab_adapter_client',
-    version='0.3.0',
+    version='0.3.1',
     zip_safe=False,
 )

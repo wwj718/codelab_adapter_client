@@ -14,13 +14,24 @@ codelab_adapter_client
         :alt: Documentation Status
 
 
+Python Client of CodeLab Adapter(https://adapter.codelab.club/) v2.
 
 
-Python Boilerplate contains all the boilerplate you need to create a Python package.
+Install
+-------
+
+pip install codelab_adapter_client
 
 
-* Free software: GNU General Public License v3
-* Documentation: https://codelab-adapter-client.readthedocs.io.
+Usage
+-----
+
+from codelab_adapter_client import AdapterNode
+
+example
+-------
+
+https://github.com/wwj718/codelab_adapter_client/blob/master/examples/extension_eim.py
 
 
 Features
