@@ -43,6 +43,12 @@ setup(
     keywords='codelab_adapter_client',
     name='codelab_adapter_client',
     packages=find_packages(include=['codelab_adapter_client']),
+    entry_points={
+        'console_scripts': [
+            'codelab-message-monitor = codelab_adapter_client.tools.monitor:monitor',
+            'codelab-message-trigger = codelab_adapter_client.tools.trigger:trigger'
+        ],
+    },
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
