@@ -45,8 +45,8 @@ setup(
     packages=find_packages(include=['codelab_adapter_client']),
     entry_points={
         'console_scripts': [
-            'codelab-message-monitor = codelab_adapter_client.tools.monitor:monitor',
-            'codelab-message-trigger = codelab_adapter_client.tools.trigger:trigger'
+            'codelab-message-monitor = codelab_adapter_client.monitor:monitor',
+            'codelab-message-trigger = codelab_adapter_client.trigger:trigger'
         ],
     },
     setup_requires=setup_requirements,
