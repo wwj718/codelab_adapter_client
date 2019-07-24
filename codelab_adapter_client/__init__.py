@@ -2,7 +2,7 @@
 
 __author__ = """Wenjie Wu"""
 __email__ = 'wuwenjie718@gmail.com'
-__version__ = '0.3.0'
+__version__ = '0.4.0'
 
 import zmq
 import time
