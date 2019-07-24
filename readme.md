@@ -20,3 +20,12 @@ from codelab_adapter_client import AdapterNode
 codelab-message-monitor # subscribes to all messages and print both topic and payload.
 codelab-message-trigger # pub the message in json file(`/tmp/message.json`).
 ```
+
+`/tmp/message.json`:
+
+```
+{
+  "topic": "adapter_core/extensions/operate",
+  "payload": { "content": "start", "extension_id": "extension_eim" }
+}
+```
