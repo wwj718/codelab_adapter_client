@@ -15,7 +15,7 @@ from codelab_adapter_client import AdapterNode
 # example
 [extension_eim.py](https://github.com/wwj718/codelab_adapter_client/blob/master/examples/extension_eim.py)
 
-# tools
+# tools(for debugging)
 ```
 codelab-message-monitor # subscribes to all messages and print both topic and payload.
 codelab-message-trigger # pub the message in json file(`/tmp/message.json`).
