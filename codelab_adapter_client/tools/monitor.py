@@ -3,12 +3,10 @@ import signal
 import sys
 import zmq
 
-from codelab_adapter_client import AdapterNode, threaded, ADAPTER_TOPIC, SCRATCH_TOPIC, NOTIFICATION_TOPIC, EXTENSIONS_OPERATE_TOPIC
-import json
+from codelab_adapter_client import AdapterNode
+from codelab_adapter_client.topic import ADAPTER_TOPIC, SCRATCH_TOPIC, NOTIFICATION_TOPIC, EXTENSIONS_OPERATE_TOPIC
 
-# todo 交互式输入工具
-
-class Trigger(AdapterNode):
+class Monitor(AdapterNode):
     """
     This class subscribes to all messages on the hub and prints out both topic and payload.
     """
@@ -22,7 +20,6 @@ class Trigger(AdapterNode):
             publisher_port=publisher_port)
 
         self.set_subscriber_topic('')
-        self.run()
         try:
             self.receive_loop()
         except zmq.error.ZMQError:
@@ -31,19 +28,12 @@ class Trigger(AdapterNode):
             sys.exit()
 
     def message_handle(self, topic, payload):
-        pass
-        # print(topic, payload)
-    
-    @threaded
-    def run(self):
-        while self._running:
-            # print(">>>self.publish({'topic':EXTENSIONS_OPERATE_TOPIC,'payload':{'content':'start', 'extension_id':'extension_eim2'}})")
-            code = input(">>>read json from /tmp/message.json (enter to run)")
-            with open("/tmp/message.json") as f:
-                message = json.loads(f.read())
-            self.publish(message)
+        print(topic, payload)
 
-def trigger():
+    def run(self):
+        pass
+
+def monitor():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", dest="codelab_adapter_ip_address", default="None",
                         help="None or IP address used by CodeLab Adapter")
@@ -64,7 +54,8 @@ def trigger():
     kw_options['publisher_port'] = args.publisher_port
     kw_options['subscriber_port'] = args.subscriber_port
 
-    my_trigger = Trigger(**kw_options)
+    my_monitor = Monitor(**kw_options)
+
     # my_monitor.start()
 
     # signal handler function called when Control-C occurs
@@ -72,7 +63,7 @@ def trigger():
     def signal_handler(signal, frame):
         print('Control-C detected. See you soon.')
 
-        my_trigger.clean_up()
+        my_monitor.clean_up()
         sys.exit(0)
 
     # listen for SIGINT
@@ -81,4 +72,4 @@ def trigger():
 
 
 if __name__ == '__main__':
-    trigger()
+    monitor()

@@ -23,7 +23,7 @@ codelab-message-trigger # pub the message in json file(`/tmp/message.json`).
 
 `/tmp/message.json`:
 
-```
+```json
 {
   "topic": "adapter_core/extensions/operate",
   "payload": { "content": "start", "extension_id": "extension_eim" }

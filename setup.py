@@ -42,17 +42,17 @@ setup(
     include_package_data=True,
     keywords='codelab_adapter_client',
     name='codelab_adapter_client',
-    packages=find_packages(include=['codelab_adapter_client']),
+    packages= ['codelab_adapter_client','codelab_adapter_client.tools'], # find_packages(include=['codelab_adapter_client','codelab_adapter_client.tools']),
     entry_points={
         'console_scripts': [
-            'codelab-message-monitor = codelab_adapter_client.monitor:monitor',
-            'codelab-message-trigger = codelab_adapter_client.trigger:trigger'
+            'codelab-message-monitor = codelab_adapter_client.tools.monitor:monitor',
+            'codelab-message-trigger = codelab_adapter_client.tools.trigger:trigger'
         ],
     },
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/wwj718/codelab_adapter_client',
-    version='0.4.1',
+    version='0.6.0',
     zip_safe=False,
 )

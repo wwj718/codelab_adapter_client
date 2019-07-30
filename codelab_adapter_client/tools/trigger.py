@@ -1,12 +1,17 @@
 import argparse
 import signal
 import sys
-
 import zmq
 
-from codelab_adapter_client import AdapterNode, threaded, ADAPTER_TOPIC, SCRATCH_TOPIC, NOTIFICATION_TOPIC, EXTENSIONS_OPERATE_TOPIC
+from codelab_adapter_client.topic import  ADAPTER_TOPIC, SCRATCH_TOPIC, NOTIFICATION_TOPIC, EXTENSIONS_OPERATE_TOPIC
+from codelab_adapter_client.utils import threaded
+from codelab_adapter_client import AdapterNode
 
-class Monitor(AdapterNode):
+import json
+
+# todo 交互式输入工具
+
+class Trigger(AdapterNode):
     """
     This class subscribes to all messages on the hub and prints out both topic and payload.
     """
@@ -20,6 +25,7 @@ class Monitor(AdapterNode):
             publisher_port=publisher_port)
 
         self.set_subscriber_topic('')
+        self.run()
         try:
             self.receive_loop()
         except zmq.error.ZMQError:
@@ -28,12 +34,19 @@ class Monitor(AdapterNode):
             sys.exit()
 
     def message_handle(self, topic, payload):
-        print(topic, payload)
-
-    def run(self):
         pass
+        # print(topic, payload)
+    
+    @threaded
+    def run(self):
+        while self._running:
+            # print(">>>self.publish({'topic':EXTENSIONS_OPERATE_TOPIC,'payload':{'content':'start', 'extension_id':'extension_eim2'}})")
+            code = input(">>>read json from /tmp/message.json (enter to run)")
+            with open("/tmp/message.json") as f:
+                message = json.loads(f.read())
+            self.publish(message)
 
-def monitor():
+def trigger():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", dest="codelab_adapter_ip_address", default="None",
                         help="None or IP address used by CodeLab Adapter")
@@ -54,8 +67,7 @@ def monitor():
     kw_options['publisher_port'] = args.publisher_port
     kw_options['subscriber_port'] = args.subscriber_port
 
-    my_monitor = Monitor(**kw_options)
-
+    my_trigger = Trigger(**kw_options)
     # my_monitor.start()
 
     # signal handler function called when Control-C occurs
@@ -63,7 +75,7 @@ def monitor():
     def signal_handler(signal, frame):
         print('Control-C detected. See you soon.')
 
-        my_monitor.clean_up()
+        my_trigger.clean_up()
         sys.exit(0)
 
     # listen for SIGINT
@@ -72,4 +84,4 @@ def monitor():
 
 
 if __name__ == '__main__':
-    monitor()
+    trigger()

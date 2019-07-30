@@ -4,7 +4,7 @@ Usage
 '''
 import time
 import logging
-from codelab_adapter_client import AdapterNode, threaded
+from codelab_adapter_client import AdapterNode
 
 logging.basicConfig(level=logging.DEBUG)
 
