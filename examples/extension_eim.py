@@ -33,7 +33,8 @@ class EIMNode(AdapterNode):
     def run(self):
         i = 0
         while self._running:
-            message = {"payload": {"content": str(i)}}  # topic可选
+            message = self.message_template()
+            message["payload"]["content"] = str(i) # topic可选
             self.publish(message)
             time.sleep(1)
             i += 1
