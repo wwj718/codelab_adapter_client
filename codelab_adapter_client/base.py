@@ -21,7 +21,7 @@ class MessageNode(metaclass=ABCMeta):
             codelab_adapter_ip_address=None,
             subscriber_port='16103',
             publisher_port='16130',
-            subscriber_list=None,
+            subscriber_list=[SCRATCH_TOPIC, EXTENSIONS_OPERATE_TOPIC],
             loop_time=0.1,
             connect_time=0.1,
             external_message_processor=None,
@@ -191,7 +191,7 @@ class AdapterNode(MessageNode):
         :param loop_time: Receive loop sleep time.
         :param connect_time: Allow the node to connect to adapter
         '''
-        kwargs["subscriber_list"] = [SCRATCH_TOPIC, EXTENSIONS_OPERATE_TOPIC]
+        # kwargs["subscriber_list"] = [SCRATCH_TOPIC, EXTENSIONS_OPERATE_TOPIC]
         super().__init__(*args, **kwargs)
         self.TOPIC = ADAPTER_TOPIC  # message topic: the message from adapter
         self.EXTENSION_ID = "eim"
