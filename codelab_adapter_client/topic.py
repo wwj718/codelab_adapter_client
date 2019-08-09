@@ -1,4 +1,3 @@
-
 # adapter data
 ADAPTER_TOPIC = "adapter/extensions/data"  # 来自插件的消息，topic
 

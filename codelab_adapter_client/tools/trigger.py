@@ -2,12 +2,12 @@ import argparse
 import signal
 import sys
 import zmq
+import json
 
 from codelab_adapter_client.topic import  ADAPTER_TOPIC, SCRATCH_TOPIC, NOTIFICATION_TOPIC, EXTENSIONS_OPERATE_TOPIC
 from codelab_adapter_client.utils import threaded
 from codelab_adapter_client import AdapterNode
 
-import json
 
 # todo 交互式输入工具
 
