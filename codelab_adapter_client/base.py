@@ -232,7 +232,7 @@ class AdapterNode(MessageNode):
         """
         self.logger.info("please set the  method to your handle method")
 
-    def _exit_message_handle(self, topic, payload):
+    def exit_message_handle(self, topic, payload):
         self.logger.info("please set the  method to your handle method")
 
     def message_template(self):
@@ -318,7 +318,7 @@ class AdapterNode(MessageNode):
                 '''
         if topic == EXTENSIONS_OPERATE_TOPIC:
             if payload.get("extension_id") == self.EXTENSION_ID:
-                self._exit_message_handle(topic, payload)
+                self.exit_message_handle(topic, payload)
         # adapter_core/extensions/operate {'content': 'stop', 'extension_id': 'extension_eim_monitor'}
         if self.external_message_processor:
             self.external_message_processor(topic, payload)
