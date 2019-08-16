@@ -21,7 +21,7 @@ class MessageNode(metaclass=ABCMeta):
             codelab_adapter_ip_address=None,
             subscriber_port='16103',
             publisher_port='16130',
-            subscriber_list=[SCRATCH_TOPIC, EXTENSIONS_OPERATE_TOPIC],
+            subscriber_list=[SCRATCH_TOPIC, NODES_OPERATE_TOPIC],
             loop_time=0.1,
             connect_time=0.1,
             external_message_processor=None,
@@ -191,7 +191,6 @@ class AdapterNode(MessageNode):
         :param loop_time: Receive loop sleep time.
         :param connect_time: Allow the node to connect to adapter
         '''
-        # kwargs["subscriber_list"] = [SCRATCH_TOPIC, EXTENSIONS_OPERATE_TOPIC]
         super().__init__(*args, **kwargs)
         self.TOPIC = ADAPTER_TOPIC  # message topic: the message from adapter
         self.EXTENSION_ID = "eim"
@@ -233,7 +232,8 @@ class AdapterNode(MessageNode):
         self.logger.info("please set the  method to your handle method")
 
     def exit_message_handle(self, topic, payload):
-        self.logger.info("please set the  method to your handle method")
+        self.pub_status(self.EXTENSION_ID,"turn_off")
+        self.terminate()
 
     def message_template(self):
         '''
@@ -316,10 +316,18 @@ class AdapterNode(MessageNode):
                 for handler in handlers:
                     handler(topic, payload)
                 '''
-        if topic == EXTENSIONS_OPERATE_TOPIC:
-            if payload.get("extension_id") == self.EXTENSION_ID:
-                self.exit_message_handle(topic, payload)
-        # adapter_core/extensions/operate {'content': 'stop', 'extension_id': 'extension_eim_monitor'}
+        if topic == NODES_OPERATE_TOPIC:
+            '''
+            分布式: 主动停止 使用extension_id
+                extension也是node
+            UI触发关闭命令
+            '''
+            command = payload.get('content')
+            if command == 'stop':
+                # 暂不处理extension
+                if payload.get("extension_id") == self.EXTENSION_ID:
+                    self.logger.info(f"stop {self}")
+                    self.exit_message_handle(topic, payload)
         if self.external_message_processor:
             self.external_message_processor(topic, payload)
 
