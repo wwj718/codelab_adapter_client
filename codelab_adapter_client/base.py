@@ -307,15 +307,14 @@ class AdapterNode(MessageNode):
 
         all the sub message
         process handler
+
+        default sub: [SCRATCH_TOPIC, NODES_OPERATE_TOPIC]
         """
-        if topic in [SCRATCH_TOPIC]:
-            if payload.get("extension_id") == self.EXTENSION_ID:
-                self.extension_message_handle(topic, payload)
-                '''
-                handlers = self.get_handlers(type="current_extension")
-                for handler in handlers:
-                    handler(topic, payload)
-                '''
+        if self.external_message_processor:
+            # handle all sub messages
+            # to handle websocket message
+            self.external_message_processor(topic, payload)
+        
         if topic == NODES_OPERATE_TOPIC:
             '''
             分布式: 主动停止 使用extension_id
@@ -328,8 +327,23 @@ class AdapterNode(MessageNode):
                 if payload.get("extension_id") == self.EXTENSION_ID:
                     self.logger.info(f"stop {self}")
                     self.exit_message_handle(topic, payload)
-        if self.external_message_processor:
-            self.external_message_processor(topic, payload)
+            return # stop here
+
+        if topic in [SCRATCH_TOPIC]:
+            '''
+            x 接受来自scratch的消息
+            v 接受所有订阅主题的消息
+            插件业务类
+            '''
+            if payload.get("extension_id") == self.EXTENSION_ID:
+                self.extension_message_handle(topic, payload)
+                '''
+                handlers = self.get_handlers(type="current_extension")
+                for handler in handlers:
+                    handler(topic, payload)
+                '''
+
+
 
     def terminate(self):
         '''

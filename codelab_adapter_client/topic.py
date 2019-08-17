@@ -25,3 +25,8 @@ FROM_MQTT_TOPIC = "from_mqtt"
 # Home Assistant
 FROM_HA_TOPIC = "from_HA"
 TO_HA_TOPIC = "to_HA"
+
+# websocket(socketio)
+# Home Assistant
+FROM_WEBSOCKET_TOPIC = "from_websocket"
+TO_WEBSOCKET_TOPIC = "to_websocket"
