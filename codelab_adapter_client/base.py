@@ -232,7 +232,7 @@ class AdapterNode(MessageNode):
         self.logger.info("please set the  method to your handle method")
 
     def exit_message_handle(self, topic, payload):
-        self.pub_status(self.EXTENSION_ID,"turn_off")
+        self.pub_extension_statu_change(self.EXTENSION_ID, "stop")
         self.terminate()
 
     def message_template(self):
@@ -247,7 +247,7 @@ class AdapterNode(MessageNode):
         message_template = {
             "payload": {
                 "content": "content",
-                "sender": self.name, # adapter/nodes/<classname>
+                "sender": self.name,  # adapter/nodes/<classname>
                 "extension_id": self.EXTENSION_ID
             }
         }
@@ -286,8 +286,17 @@ class AdapterNode(MessageNode):
         payload["content"] = content
         self.publish_payload(payload, topic)
 
-    def pub_status(self, extension_name, statu):
+    def pub_status(self, extension_statu_map):
+        '''
+        todo 重构
+        '''
         topic = EXTENSIONS_STATUS_TOPIC
+        payload = {}
+        payload["content"] = extension_statu_map
+        self.publish_payload(payload, topic)
+
+    def pub_extension_statu_change(self, extension_name, statu):
+        topic = EXTENSION_STATU_CHANGE_TOPIC
         extension_id = self.EXTENSION_ID
         payload = {
             "extension_id": extension_id,
@@ -314,7 +323,7 @@ class AdapterNode(MessageNode):
             # handle all sub messages
             # to handle websocket message
             self.external_message_processor(topic, payload)
-        
+
         if topic == NODES_OPERATE_TOPIC:
             '''
             分布式: 主动停止 使用extension_id
@@ -327,7 +336,7 @@ class AdapterNode(MessageNode):
                 if payload.get("extension_id") == self.EXTENSION_ID:
                     self.logger.info(f"stop {self}")
                     self.exit_message_handle(topic, payload)
-            return # stop here
+            return  # stop here
 
         if topic in [SCRATCH_TOPIC]:
             '''
@@ -342,8 +351,6 @@ class AdapterNode(MessageNode):
                 for handler in handlers:
                     handler(topic, payload)
                 '''
-
-
 
     def terminate(self):
         '''

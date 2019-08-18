@@ -10,6 +10,8 @@ SCRATCH_TOPIC = "scratch/extensions/command"
 EXTENSIONS_OPERATE_TOPIC = "core/extensions/operate" # 区分extensions和node(server)
 NODES_OPERATE_TOPIC = "core/nodes/operate"
 EXTENSIONS_STATUS_TOPIC = "core/extensions/status"
+EXTENSIONS_STATUS_TRIGGER_TOPIC = "core/extensions/status/trigger"
+EXTENSION_STATU_CHANGE_TOPIC = "core/extension/statu/change"
 NOTIFICATION_TOPIC = "core/notification"
 
 # ble
