@@ -21,7 +21,7 @@ opencv
 ### GUI开关
 guizero
 
-pygame
+Pygame/Pygame Zero
 
 play
 
