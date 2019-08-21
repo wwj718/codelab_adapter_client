@@ -1,6 +1,9 @@
 # HA
 from .base import AdapterNode
 from codelab_adapter_client.topic import *
+from collections import deque
+import time
+from loguru import logger
 
 
 class HANode(AdapterNode):
@@ -17,17 +20,20 @@ class HANode(AdapterNode):
         '''
         if mode:
             kwargs["codelab_adapter_ip_address"] = "rpi.codelab.club"
+        kwargs["logger"] = logger
         super().__init__(*args, **kwargs)
-        self.TOPIC = TO_HA_TOPIC  # 需放在super初始化之后
+        self.TOPIC = TO_HA_TOPIC  # after super init
         self.set_subscriber_topic(FROM_HA_TOPIC)
-        self._id = 1
+        self._message_id = 1
+        self.ha_message_queue = deque(maxlen=2)
+        self.target_entity_ids = ["door", "cube"]
 
     def call_service(self,
                      domain="light",
                      service="turn_off",
                      entity_id="light.yeelight1"):
         content = {
-            "id": self._id,
+            "id": self._message_id,
             "type": "call_service",
             "domain": domain,
             "service": service,
@@ -35,7 +41,7 @@ class HANode(AdapterNode):
                 "entity_id": entity_id
             }
         }
-        self._id += 1
+        self._message_id += 1
         message = self.message_template()
         message['payload']['content'] = content
         self.publish(message)
@@ -44,25 +50,75 @@ class HANode(AdapterNode):
         '''
         '''
         if topic == FROM_HA_TOPIC:
+            timestamp = time.time()
+
             # HA部分只订阅了状态变化事件
             content = payload.get("content")
             event_type = content["type"]
             if event_type == "event":
-                data = content["event"]["data"]
-                entity_id = data["entity_id"]
-                new_state = data["new_state"]
-                state = new_state["state"]
-                # print(entity_id, state)
                 '''
                 with open('/tmp/neverland.json', 'w+') as logfile:
                         print(payload, file=logfile)
-                        # 在类中做 解析状态变化， 翻译scratch中的做法
-                        # todo: 使用正则处理，以门窗感应器为例
-                        # "friendly_name": "门窗感应器",
-                        # "state": "off"
-                        # "state": "on"
                 '''
-                if "door" in entity_id:
-                    print("door_sensor event")
-                    door_window_sensor_state = state
-                    print(entity_id, door_window_sensor_state)
+                data = content["event"]["data"]
+                entity_id = data["entity_id"]
+                if any([
+                        target_entity_id in entity_id
+                        for target_entity_id in self.target_entity_ids
+                ]):
+
+                    new_state = data["new_state"]["state"]
+                    old_state = data["old_state"]["state"]
+                    self.ha_message_queue.append((timestamp, payload))
+                    if len(self.ha_message_queue) == 2:
+                        latest_message_timestamp = self.ha_message_queue[1][0]
+                        old_message_timestamp = self.ha_message_queue[0][0]
+                        elapsed = latest_message_timestamp - old_message_timestamp
+                        # print("elapsed:", elapsed)
+                        self.logger.debug(
+                            f'old_state:{old_state}, new_state:{new_state}'
+                        )  # 观察，数据
+
+                        if "door" in entity_id:
+                            '''
+                            开门
+                              old_state:off, new_state:on
+                            关门
+                              old_state:on, new_state:off
+
+                            模仿gpiozero
+                            '''
+                            method_name = None
+                            entity = "door"
+                            action = None
+                            if (old_state, new_state) == ("off", "on"):
+                                # print("open door")
+                                action = "open"
+                            if (old_state, new_state) == ("on", "off"):
+                                action = "close"
+                                # print("close door")
+                            method_name = f"{action}_{entity}"
+                            if action:
+                                self.user_event_method(method_name, entity,
+                                                       action)
+
+                        if "cube" in entity_id:
+                            '''
+                            old_state:, new_state:rotate_left
+                            '''
+                            method_name = None
+                            entity = "cube"
+                            action = None
+                            if (not old_state) and new_state:
+                                action = new_state
+                                method_name = f"{action}_{entity}"
+                                if action:
+                                    self.user_event_method(
+                                        method_name, entity, action)
+
+    def user_event_method(self, method_name, entity, action):
+        if hasattr(self, method_name):
+            getattr(self, method_name)()
+
+        if hasattr(self, "neverland_event"):
+            getattr(self, "neverland_event")(entity, action)  # entity action

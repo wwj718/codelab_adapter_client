@@ -4,7 +4,6 @@ import time
 import logging
 import sys
 import msgpack
-import psutil
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 import asyncio
