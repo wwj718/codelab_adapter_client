@@ -9,11 +9,11 @@ class Neverland(HANode):
     def open_my_book(self):
         subprocess.call("open /Applications/iBooks.app/", shell=True)
 
-    def open_door(self):
+    def when_open_door(self):
         print("The door is opened")
         self.open_my_book()
 
-    def close_door(self):
+    def when_close_door(self):
         print("The door is closed")
 
     def neverland_event(self, entity, action):

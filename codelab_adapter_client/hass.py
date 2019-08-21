@@ -120,7 +120,7 @@ class HANode(AdapterNode):
                         if (old_state, new_state) == ("on", "off"):
                             action = "close"
                             # print("close door")
-                        method_name = f"{action}_{entity}"
+                        method_name = f"when_{action}_{entity}" # when open door
                         if action:
                             self.user_event_method(method_name, entity, action)
 
@@ -133,7 +133,7 @@ class HANode(AdapterNode):
                         action = None
                         if (not old_state) and new_state:
                             action = new_state
-                            method_name = f"{action}_{entity}"
+                            method_name = f"when_{action}_{entity}"
                             if action:
                                 self.user_event_method(method_name, entity,
                                                        action)
