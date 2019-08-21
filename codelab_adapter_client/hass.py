@@ -27,7 +27,7 @@ class HANode(AdapterNode):
         super().__init__(*args, **kwargs)
         self.TOPIC = TO_HA_TOPIC  # after super init
         self.set_subscriber_topic(FROM_HA_TOPIC)
-        # self._message_id = 1  # 由HA那边处理id
+        # self._message_id = 1  # HA server处理id
         self.target_entity_ids = ["door", "cube"]
         self.states = None
         self.lights = None
@@ -71,8 +71,7 @@ class HANode(AdapterNode):
             message_id = payload["content"]["id"]
             mytype = payload["content"].get("mytype")
             if mytype == GET_STATES:
-                # print(payload)
-                # todo 使用IPython交互式探索
+                # 建议 使用IPython交互式探索
                 self.states = payload["content"]
                 result = payload["content"]["result"]
                 for i in result:
@@ -81,10 +80,7 @@ class HANode(AdapterNode):
                     if i["entity_id"] == "group.all_switches":
                         self.switches = i["attributes"]["entity_id"]
 
-            timestamp = time.time()
-            # HA部分只订阅了状态变化事件
-            # todo 获取状态 type==result id对应，或者使用request主动获取
-            # 主动发送，对应的id获取
+            # HA部分只订阅了状态变化事件, get_states单独处理
             content = payload.get("content")
             event_type = content["type"]
 
