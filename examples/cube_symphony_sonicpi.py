@@ -14,6 +14,23 @@ def sonicpi_sample_wav(wav_file):
     wav_file_dir = "~/mylab/codelabclub/lab/codelab_adapter_client/examples/src"
     return f'sample "{wav_file_dir}/{wav_file}"'
 
+def test_run():
+    return '''
+define :foo do
+  play 50
+  sleep 1
+  play 55
+  sleep 0.5
+end
+
+foo
+
+sleep 1
+
+2.times do
+  foo
+end
+    '''
 
 cowbell = sonicpi_sample_wav("Large Cowbell.wav")
 hand_clap = sonicpi_sample_wav("Large Cowbell.wav")
@@ -35,6 +52,7 @@ class Neverland(HANode):
         if entity == "cube":
             if action == "slide":
                 run(cowbell) 
+                # run(test_run())
             if action == "rotate_left":
                 # play (60, attack=0.5, decay=1, sustain_level=0.4, sustain=2, release=0.5)
                 # attack 淡入时间，中间持续时间，release淡出时间
