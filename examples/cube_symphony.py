@@ -24,11 +24,11 @@ class Neverland(HANode):
     def __init__(self):
         super().__init__()
 
-    def neverland_event(self, entity, action):
+    def neverland_event(self, entity, action, entity_id):
         '''
         entity_id 
         '''
-        print(entity, action)
+        print(entity, action, entity_id)
         if entity == "cube":
             if action == "slide":
                 hand_clap.play()
@@ -45,7 +45,6 @@ try:
     neverland.run()
 except KeyboardInterrupt:
     neverland.terminate()
-    pygame.midi.quit()
 '''
 while True:
     for event in pygame.event.get():

@@ -16,7 +16,7 @@ class Neverland(HANode):
     def when_close_door(self):
         print("The door is closed")
 
-    def neverland_event(self, entity, action):
+    def neverland_event(self, entity, action, entity_id):
         print(entity, action)
 
     def run(self):

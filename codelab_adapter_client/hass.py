@@ -120,9 +120,10 @@ class HANode(AdapterNode):
                         if (old_state, new_state) == ("on", "off"):
                             action = "close"
                             # print("close door")
-                        method_name = f"when_{action}_{entity}" # when open door
+                        method_name = f"when_{action}_{entity}"  # when open door
                         if action:
-                            self.user_event_method(method_name, entity, action)
+                            self.user_event_method(method_name, entity, action,
+                                                   entity_id)
 
                     if "cube" in entity_id:
                         '''
@@ -136,11 +137,12 @@ class HANode(AdapterNode):
                             method_name = f"when_{action}_{entity}"
                             if action:
                                 self.user_event_method(method_name, entity,
-                                                       action)
+                                                       action, entity_id)
 
-    def user_event_method(self, method_name, entity, action):
+    def user_event_method(self, method_name, entity, action, entity_id):
         if hasattr(self, method_name):
             getattr(self, method_name)()
 
         if hasattr(self, "neverland_event"):
-            getattr(self, "neverland_event")(entity, action)  # entity action
+            getattr(self, "neverland_event")(entity, action,
+                                             entity_id)  # entity action
