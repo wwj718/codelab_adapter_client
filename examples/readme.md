@@ -25,6 +25,8 @@ Pygame/Pygame Zero
 
 play
 
+p5py
+
 [Play: 像学习Scratch那样学习Python](https://blog.just4fun.site/replit-play.html)
 
 ### 做一个手柄
