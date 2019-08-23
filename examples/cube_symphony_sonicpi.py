@@ -5,24 +5,27 @@ instal sonic pi
 '''
 import pygame
 from codelab_adapter_client import HANode
-import time
+from time import sleep
 
-from psonic import play  # work with sonic pi
+from psonic import play, run  # work with sonic pi
 
-pygame.init()
-pygame.mixer.init()
-pygame.display.set_mode()
-pygame.display.set_caption('cube symphony')
 
-hand_clap = pygame.mixer.Sound("src/Hand Clap.wav")
-cowbell = pygame.mixer.Sound("src/Large Cowbell.wav")
+def sonicpi_sample_wav(wav_file):
+    wav_file_dir = "~/mylab/codelabclub/lab/codelab_adapter_client/examples/src"
+    return f'sample "{wav_file_dir}/{wav_file}"'
 
+
+cowbell = sonicpi_sample_wav("Large Cowbell.wav")
+hand_clap = sonicpi_sample_wav("Large Cowbell.wav")
+
+# sample "~/mylab/codelabclub/lab/codelab_adapter_client/examples/src/Large Cowbell.wav"
 # set midi  todo  with sonic
 
 
 class Neverland(HANode):
     def __init__(self):
         super().__init__()
+        self.beat = 1/4
 
     def neverland_event(self, entity, action, entity_id):
         '''
@@ -31,9 +34,14 @@ class Neverland(HANode):
         print(entity, action, entity_id)
         if entity == "cube":
             if action == "slide":
-                hand_clap.play()
+                run(cowbell) 
             if action == "rotate_left":
-                play(70)
+                # play (60, attack=0.5, decay=1, sustain_level=0.4, sustain=2, release=0.5)
+                # attack 淡入时间，中间持续时间，release淡出时间
+                # play是非阻塞的
+                play(70,sustain=0.25) # 响度 amp=2/0.5， 方向 pan=-1/1/0
+                sleep(self.beat)
+                play(72,sustain=0.25)
 
     def run(self):
         self.receive_loop()
